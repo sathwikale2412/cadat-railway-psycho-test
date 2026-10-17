@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="20" fill="#0284c7" />
+  <path d="M20 70 L80 70 M25 78 L75 78" stroke="#f8fafc" stroke-width="4" stroke-linecap="round"/>
+  <!-- Train silhouette -->
+  <path d="M30 65 L30 35 Q30 25 50 25 Q70 25 70 35 L70 65 Z" fill="#f8fafc"/>
+  <rect x="37" y="32" width="26" height="14" rx="3" fill="#0284c7"/>
+  <circle cx="50" cy="54" r="5" fill="#eab308"/>
+  <circle cx="38" cy="65" r="4" fill="#0f172a"/>
+  <circle cx="62" cy="65" r="4" fill="#0f172a"/>
+</svg>

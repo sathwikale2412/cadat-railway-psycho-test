@@ -1,0 +1,18 @@
+{
+  "name": "CADAT - Railway Psycho Speed Test Practice",
+  "short_name": "CADAT Practice",
+  "description": "Indian Railways Computer Aided Driver Aptitude Test (RDSO Psycho Test Battery) mobile practice simulator",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0284c7",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
