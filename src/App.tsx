@@ -61,6 +61,7 @@ export const App: React.FC = () => {
   const [isRulesModalOpen, setIsRulesModalOpen] = useState<boolean>(false);
   const [rulesInitialTestId, setRulesInitialTestId] = useState<TestId>('test1');
   const [showKeyboardReplica, setShowKeyboardReplica] = useState<boolean>(false);
+  const [testSessionKey, setTestSessionKey] = useState<number>(0);
 
   // Settings
   const [soundOn, setSoundOn] = useState<boolean>(sound.isSoundEnabled());
@@ -110,6 +111,7 @@ export const App: React.FC = () => {
   const handleStartDrill = (testId: TestId) => {
     sound.playKeyClick();
     setIsBatteryMode(false);
+    setTestSessionKey((k) => k + 1);
     setActiveTest(testId);
   };
 
@@ -118,6 +120,7 @@ export const App: React.FC = () => {
     sound.playKeyClick();
     setIsBatteryMode(true);
     setBatteryStepIndex(0);
+    setTestSessionKey((k) => k + 1);
     setBatteryResultsCollector({} as Record<TestId, TestResult>);
     setActiveTest('test1');
   };
@@ -170,6 +173,7 @@ export const App: React.FC = () => {
     const nextIdx = batteryStepIndex + 1;
     setBatteryStepIndex(nextIdx);
     setCurrentResultModal(null);
+    setTestSessionKey((k) => k + 1);
     setActiveTest(batterySequence[nextIdx]);
   };
 
@@ -190,6 +194,7 @@ export const App: React.FC = () => {
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none">
         {activeTest === 'test1' && (
           <Test1ReactionTime
+            key={`test1_${testSessionKey}`}
             onComplete={handleTestComplete}
             onExit={handleExitCurrentTest}
             totalRounds={isBatteryMode ? 20 : 15}
@@ -197,6 +202,7 @@ export const App: React.FC = () => {
         )}
         {activeTest === 'test2' && (
           <Test2FormPerception
+            key={`test2_${testSessionKey}`}
             onComplete={handleTestComplete}
             onExit={handleExitCurrentTest}
             totalTrials={isBatteryMode ? 25 : 20}
@@ -204,6 +210,7 @@ export const App: React.FC = () => {
         )}
         {activeTest === 'test3' && (
           <Test3Concentration
+            key={`test3_${testSessionKey}`}
             onComplete={handleTestComplete}
             onExit={handleExitCurrentTest}
             durationSeconds={isBatteryMode ? 300 : 180}
@@ -211,6 +218,7 @@ export const App: React.FC = () => {
         )}
         {activeTest === 'test4' && (
           <Test4SpeedPerception
+            key={`test4_${testSessionKey}`}
             onComplete={handleTestComplete}
             onExit={handleExitCurrentTest}
             totalTrials={isBatteryMode ? 15 : 12}
@@ -218,6 +226,7 @@ export const App: React.FC = () => {
         )}
         {activeTest === 'test5' && (
           <Test5SameColourSequence
+            key={`test5_${testSessionKey}`}
             onComplete={handleTestComplete}
             onExit={handleExitCurrentTest}
             durationSeconds={isBatteryMode ? 120 : 90}
@@ -231,7 +240,7 @@ export const App: React.FC = () => {
             isBatteryMode={isBatteryMode}
             onRetry={() => {
               setCurrentResultModal(null);
-              // Restart same test
+              setTestSessionKey((k) => k + 1);
             }}
             onHome={() => {
               setCurrentResultModal(null);
