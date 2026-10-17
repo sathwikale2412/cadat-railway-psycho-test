@@ -510,13 +510,20 @@ export const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto border-t border-slate-800 bg-slate-950/80 py-4 px-3 sm:px-6 text-center text-xs text-slate-400">
-        <p>
+      <footer className="mt-auto border-t border-slate-800 bg-slate-950/90 py-5 px-3 sm:px-6 text-center text-xs text-slate-400">
+        <p className="font-medium text-slate-300">
           Indian Railways CADAT & RDSO Psycho Aptitude Simulator • Built for Assistant Loco Pilot (ALP), Station Master & Train Operators
         </p>
         <p className="text-[11px] text-slate-400 mt-1">
           Designed for speed practice on smartphones, tablets, and laptops from anywhere with internet.
         </p>
+        <div className="mt-3 pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-center gap-1.5 text-xs">
+          <span className="text-slate-400">Designed & Built by</span>
+          <span className="font-bold text-cyan-400 px-2 py-0.5 rounded-md bg-cyan-950/60 border border-cyan-800/50">
+            Ale Sathwik
+          </span>
+          <span className="text-slate-400">• CSE Student, Vignana Bharathi Institute of Technology (VBIT)</span>
+        </div>
       </footer>
 
       {/* Test Rules Modal */}

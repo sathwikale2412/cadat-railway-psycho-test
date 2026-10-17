@@ -113,3 +113,11 @@ When practicing on a PC / laptop:
 - `G`: Green stimulus
 - `1` - `5`: Form selection numbers (Test 2)
 - `↑`, `↓`, `←`, `→`: Arrow keys for 4-dots grid navigation (Test 3)
+
+---
+
+## 👨‍💻 Credits & Author
+- **Designed & Developed by:** **Ale Sathwik**
+- **Major:** Computer Science and Engineering (CSE) Student
+- **Institute:** Vignana Bharathi Institute of Technology (VBIT)
+
