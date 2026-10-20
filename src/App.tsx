@@ -10,7 +10,9 @@ import {
   saveBatteryResult,
   getStoredBatteries,
   clearAllHistory,
+  syncFromCloud,
 } from './utils/storage';
+import { useAuth } from './context/AuthContext';
 
 // Test Components
 import { Test1ReactionTime } from './components/tests/Test1ReactionTime';
@@ -24,6 +26,8 @@ import { TestResultModal } from './components/TestResultModal';
 import { BatteryReportModal } from './components/BatteryReportModal';
 import { TestRulesModal } from './components/TestRulesModal';
 import { VirtualKeyboard } from './components/VirtualKeyboard';
+import { AuthScreen } from './components/AuthScreen';
+import { AccountBar } from './components/AccountBar';
 
 // Icons
 import {
@@ -49,6 +53,8 @@ import {
 } from 'lucide-react';
 
 export const App: React.FC = () => {
+  const { ready, cloudEnabled, userId, isGuest } = useAuth();
+
   // Navigation State
   const [activeTest, setActiveTest] = useState<TestId | null>(null);
   const [isBatteryMode, setIsBatteryMode] = useState<boolean>(false);
@@ -81,6 +87,11 @@ export const App: React.FC = () => {
   useEffect(() => {
     reloadHistory();
   }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+    syncFromCloud(userId).then(reloadHistory);
+  }, [userId]);
 
   // Sound toggle
   const toggleSound = () => {
@@ -126,7 +137,7 @@ export const App: React.FC = () => {
   };
 
   const handleTestComplete = (result: TestResult) => {
-    saveTestResult(result);
+    saveTestResult(result, userId);
     reloadHistory();
 
     if (isBatteryMode) {
@@ -156,7 +167,7 @@ export const App: React.FC = () => {
           averageTScore: avgTScore,
         };
 
-        saveBatteryResult(batteryRecord);
+        saveBatteryResult(batteryRecord, userId);
         reloadHistory();
         setActiveTest(null);
         setCurrentResultModal(null);
@@ -187,6 +198,19 @@ export const App: React.FC = () => {
     setActiveTest(null);
     setIsBatteryMode(false);
   };
+
+  // Auth gate: an unconfigured deployment keeps working device-only.
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center text-xs font-mono">
+        <span>Loading CADAT…</span>
+      </div>
+    );
+  }
+
+  if (cloudEnabled && !userId && !isGuest) {
+    return <AuthScreen />;
+  }
 
   // If a test is currently running, render that test screen
   if (activeTest) {
@@ -311,6 +335,8 @@ export const App: React.FC = () => {
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
+
+          <AccountBar />
         </div>
       </header>
 
