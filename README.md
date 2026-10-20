@@ -7,6 +7,8 @@ A responsive, high-performance web simulation of the **Indian Railways CADAT (Co
 
 Designed specifically for railway employees and candidates to practice anytime, anywhere on **smartphones, tablets, and computers**.
 
+**Live:** https://cadat-railway-psycho-test.vercel.app — open it on a phone from any network, no install and no account needed unless you add Supabase keys (see the deployment guide).
+
 ---
 
 ## 📸 5 Sub-Tests Included (Exact CADAT Exam Match)
@@ -29,7 +31,7 @@ This simulator implements all 5 tests from the official Indian Railways CADAT ex
 - **Direct Touch Scanning**: In Test 3 (4-Dots Concentration), you can tap directly on any box on touchscreens.
 - **Web Audio Sound Effects**: Zero-latency synthesized audio cues (beeps, train whistle, correct chime, error buzz).
 - **Mobile Haptic Feedback**: Integrates with the browser `Vibration API` to provide physical tactile sensation on phone button taps.
-- **PWA (Progressive Web App)**: Add to Home Screen on Android or iOS to use like a native app even when traveling on trains or in low-signal areas!
+- **Add to Home Screen**: `manifest.json` gives the site an icon and a standalone window on Android or iOS. There is no service worker, so the page itself still needs a connection — once a test is running it is fully in-memory, but you cannot open it offline.
 - **Fullscreen Mode**: Toggle button to hide browser navigation bars and prevent accidental gestures.
 
 ---
@@ -43,11 +45,37 @@ $$T = 50 \pm 10 \times \left(\frac{X - \mu}{\sigma}\right)$$
 - **Statutory Cutoff**: A candidate must achieve a T-score of **$\ge 42.0$ in each sub-test independently** to be deemed psychotechnically qualified.
 - The simulator provides instant T-score calculations, raw score metrics, error breakdowns, and a unified 5-test Battery Scorecard!
 
+**About the means and standard deviations.** The $\mu$ and $\sigma$ in `src/utils/scoring.ts` are calibrated to *this* on-screen instrument, not published RDSO statistics — the board's real norms come from its own candidate population on paper-and-pencil apparatus. They are chosen so the score each sub-test can physically produce spans the cutoff: Test 3, for example, is one 80-cell page holding roughly 30 four-dot groups, so its net score cannot exceed ~30 and a mean of 65 would have made passing impossible no matter how carefully a candidate scanned. Treat the pass/fail line as practice guidance, not a prediction of your board result.
+
 ---
 
 ## 🚀 Live Deployment Guide
 
 The web application is built with Vite + React + TypeScript + Tailwind CSS and is compiled into static files inside the `dist/` directory.
+
+### Before you deploy: accounts, sync and the login log (optional)
+
+Signed-in candidates get their history on any device, and every sign-in is written to a
+`cadat_logins` table you can read in the Supabase dashboard. Without these two variables
+the app skips the sign-in screen entirely and stores everything in that browser only, so
+a plain static deploy still works exactly as it did before.
+
+1. Create a Supabase project (any project works — the tables are prefixed `cadat_`, so this
+   app can share a project with your other apps and a candidate then signs into all of them
+   with one account).
+2. Run `supabase/schema.sql` in the SQL editor. It creates `cadat_results`, `cadat_batteries`
+   and `cadat_logins` with row-level security, so a candidate can only ever read their own rows.
+3. Copy the **Project URL** and the **anon public key** — never the `service_role` key, which
+   would bypass that security and is worthless in a browser bundle anyway.
+4. Add them in Vercel as **Config** (not Secret — `VITE_` variables are inlined into the
+   bundle at build time, so a redeploy is required after changing them):
+   ```bash
+   vercel env add VITE_SUPABASE_URL
+   vercel env add VITE_SUPABASE_ANON_KEY
+   vercel deploy --prod
+   ```
+5. New sign-ups get a confirmation email from Supabase; the candidate must confirm it before
+   the first sign-in. Turn that requirement off only if you want instant accounts for a demo.
 
 ### Option 1: Deploy to Vercel (1-Click)
 1. Push this folder to a GitHub repository:

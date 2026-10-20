@@ -20,7 +20,7 @@ export interface TestResult {
   correctTrials: number;
   errorTrials: number;
   omissionTrials?: number;
-  averageReactionTimeMs: number; // in milliseconds
+  averageReactionTimeMs?: number; // absent for self-paced tests, which have no reaction time
   accuracyPercentage: number;
   rawScore: number;
   tScore: number; // RDSO T-Score

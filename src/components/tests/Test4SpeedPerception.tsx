@@ -18,7 +18,7 @@ interface TrialResultItem {
   speedPxPerSec: number;
   timeErrorMs: number; // positive = late, negative = early
   absoluteErrorMs: number;
-  success: boolean; // within acceptable tolerance (< 150ms)
+  success: boolean; // within acceptable tolerance (absolute error <= 125ms)
 }
 
 export const Test4SpeedPerception: React.FC<Test4Props> = ({
@@ -219,7 +219,7 @@ export const Test4SpeedPerception: React.FC<Test4Props> = ({
         results.length,
         accurateCount,
         errorCount,
-        avgAbsError,
+        null, // timing deviation is an error measure, not a reaction time
         avgAbsError, // Raw score is average deviation ms (lower is better)
         {
           'Mean Absolute Error': `${avgAbsError} ms`,

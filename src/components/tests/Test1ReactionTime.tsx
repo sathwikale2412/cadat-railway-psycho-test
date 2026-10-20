@@ -31,8 +31,8 @@ export const Test1ReactionTime: React.FC<Test1Props> = ({
   // Stats
   const [results, setResults] = useState<{
     round: number;
-    signalColor: SignalColor;
-    reactionTimeMs: number;
+    signalColor: SignalColor | null;
+    reactionTimeMs: number | null;
     movementTimeMs: number;
     success: boolean;
     errorType?: string;
@@ -109,8 +109,9 @@ export const Test1ReactionTime: React.FC<Test1Props> = ({
             ...prev,
             {
               round: currentRound,
-              signalColor: 'red',
-              reactionTimeMs: 1000,
+              // No signal had appeared yet, so there is no colour and no reaction time to record.
+              signalColor: null,
+              reactionTimeMs: null,
               movementTimeMs: 0,
               success: false,
               errorType: 'Premature Press',
@@ -205,6 +206,38 @@ export const Test1ReactionTime: React.FC<Test1Props> = ({
               startNextRound();
             }
           }, 1100);
+          return;
+        }
+
+        // Any other key ends the round as an error. Ignoring it used to leave the test
+        // sitting in this phase until the candidate happened to press L.
+        if (['y', 'r', 'g'].includes(key)) {
+          sound.playError();
+          setRoundFeedback({
+            success: false,
+            reactionTimeMs: Math.round(performance.now() - stimulusTimeRef.current),
+            message: 'Wrong final key! The round ends with L.',
+          });
+          setResults((prev) => [
+            ...prev,
+            {
+              round: currentRound,
+              signalColor: activeSignalColor,
+              reactionTimeMs: Math.round(performance.now() - stimulusTimeRef.current),
+              movementTimeMs: 0,
+              success: false,
+              errorType: 'Wrong Final Key',
+            },
+          ]);
+          setPhase('FEEDBACK');
+          setTimeout(() => {
+            if (currentRound >= totalRounds) {
+              finishTest();
+            } else {
+              setCurrentRound((c) => c + 1);
+              startNextRound();
+            }
+          }, 1400);
         }
       }
     },
@@ -216,6 +249,39 @@ export const Test1ReactionTime: React.FC<Test1Props> = ({
     setPhase('FINISHED');
   }, []);
 
+  // A candidate who never closes the response with L used to be stranded in this phase,
+  // with the timer running and no way to reach the next round.
+  useEffect(() => {
+    if (phase !== 'WAITING_FINAL_L') return;
+
+    const id = window.setTimeout(() => {
+      sound.playError();
+      setRoundFeedback({ success: false, message: 'No final L press — the round timed out.' });
+      setResults((prev) => [
+        ...prev,
+        {
+          round: currentRound,
+          signalColor: activeSignalColor,
+          reactionTimeMs: null,
+          movementTimeMs: 0,
+          success: false,
+          errorType: 'No Final Press',
+        },
+      ]);
+      setPhase('FEEDBACK');
+      window.setTimeout(() => {
+        if (currentRound >= totalRounds) {
+          finishTest();
+        } else {
+          setCurrentRound((c) => c + 1);
+          startNextRound();
+        }
+      }, 1400);
+    }, 4000);
+
+    return () => clearTimeout(id);
+  }, [phase, currentRound, activeSignalColor, totalRounds, finishTest, startNextRound]);
+
   // When finished, compute score
   useEffect(() => {
     if (phase === 'FINISHED' && results.length > 0) {
@@ -225,8 +291,8 @@ export const Test1ReactionTime: React.FC<Test1Props> = ({
 
       const avgRT =
         correctResults.length > 0
-          ? Math.round(correctResults.reduce((acc, r) => acc + r.reactionTimeMs, 0) / correctResults.length)
-          : 999;
+          ? Math.round(correctResults.reduce((acc, r) => acc + (r.reactionTimeMs ?? 0), 0) / correctResults.length)
+          : null;
 
       const durationSec = Math.max(1, Math.round((Date.now() - testStartTimeRef.current) / 1000));
 
@@ -238,10 +304,11 @@ export const Test1ReactionTime: React.FC<Test1Props> = ({
         correctCount,
         errorCount,
         avgRT,
-        avgRT, // Raw metric is average reaction time ms
+        // Finishing without a single correct round is the slowest possible outcome, not 0 ms.
+        avgRT ?? 10000,
         {
-          'Fastest Reaction': correctResults.length > 0 ? `${Math.min(...correctResults.map((r) => r.reactionTimeMs))} ms` : 'N/A',
-          'Slowest Reaction': correctResults.length > 0 ? `${Math.max(...correctResults.map((r) => r.reactionTimeMs))} ms` : 'N/A',
+          'Fastest Reaction': correctResults.length > 0 ? `${Math.min(...correctResults.map((r) => r.reactionTimeMs ?? 0))} ms` : 'N/A',
+          'Slowest Reaction': correctResults.length > 0 ? `${Math.max(...correctResults.map((r) => r.reactionTimeMs ?? 0))} ms` : 'N/A',
           'Accuracy Rate': `${Math.round((correctCount / results.length) * 100)}%`,
         }
       );

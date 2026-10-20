@@ -129,10 +129,10 @@ export const Test3Concentration: React.FC<Test3Props> = ({
         'test3',
         'Test of Concentration (4-Dots)',
         durationSec,
-        cells.length,
+        totalFourDots, // denominator is the target groups, not every cell on the page
         correctMarks,
         wrongMarks,
-        Math.round((durationSec / Math.max(1, activeCursor + 1)) * 1000), // Avg RT per cell ms
+        null, // self-paced scanning has no reaction time
         rawNetScore,
         {
           'Total 4-Dot Groups': totalFourDots,

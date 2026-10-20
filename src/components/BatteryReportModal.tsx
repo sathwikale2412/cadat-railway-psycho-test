@@ -113,7 +113,8 @@ export const BatteryReportModal: React.FC<BatteryReportModalProps> = ({
                 <div>
                   <h4 className="text-xs sm:text-sm font-bold text-white">{TEST_NAMES[tId]}</h4>
                   <span className="text-[11px] text-slate-400">
-                    Accuracy: {res.accuracyPercentage}% | RT: {res.averageReactionTimeMs}ms
+                    Accuracy: {res.accuracyPercentage}%
+                    {typeof res.averageReactionTimeMs === 'number' ? ` | RT: ${res.averageReactionTimeMs}ms` : ''}
                   </span>
                 </div>
 

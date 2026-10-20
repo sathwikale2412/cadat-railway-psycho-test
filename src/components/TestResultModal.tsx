@@ -82,14 +82,16 @@ export const TestResultModal: React.FC<TestResultModalProps> = ({
           </div>
 
           <div className="pl-2">
-            <span className="text-[11px] text-slate-400 uppercase font-semibold block">Accuracy / Speed</span>
+            <span className="text-[11px] text-slate-400 uppercase font-semibold block">Accuracy</span>
             <div className="flex items-center justify-center gap-1 mt-1">
               <Zap className="w-5 h-5 text-cyan-400" />
               <span className="text-3xl font-black font-mono text-cyan-400">
                 {result.accuracyPercentage}%
               </span>
             </div>
-            <span className="text-[10px] text-slate-500">{result.averageReactionTimeMs} ms avg</span>
+            {typeof result.averageReactionTimeMs === 'number' && (
+              <span className="text-[10px] text-slate-500">{result.averageReactionTimeMs} ms avg</span>
+            )}
           </div>
         </div>
 

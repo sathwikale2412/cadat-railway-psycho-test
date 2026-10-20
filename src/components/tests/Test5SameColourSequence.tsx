@@ -42,7 +42,6 @@ export const Test5SameColourSequence: React.FC<Test5Props> = ({
 
   // Tracking state refs
   const hasFiveSameRef = useRef<boolean>(false);
-  const fiveSameActiveTargetColor = useRef<LightColor | null>(null);
   const fiveSameRespondedRef = useRef<boolean>(false);
 
   const blinkerHistoryRef = useRef<LightColor[]>([]);
@@ -86,9 +85,6 @@ export const Test5SameColourSequence: React.FC<Test5Props> = ({
     const shouldSpawnFiveSame = Math.random() < 0.32;
     const colors: LightColor[] = ['red', 'green', 'yellow', 'blue', 'white'];
     const chosenSameColor: LightColor = ['red', 'green', 'yellow', 'blue'][Math.floor(Math.random() * 4)] as LightColor;
-
-    hasFiveSameRef.current = shouldSpawnFiveSame;
-    fiveSameActiveTargetColor.current = shouldSpawnFiveSame ? chosenSameColor : null;
 
     // Randomize which light is the designated Blinker
     const blinkerIndex = Math.floor(Math.random() * LIGHT_POSITIONS.length);
@@ -169,13 +165,25 @@ export const Test5SameColourSequence: React.FC<Test5Props> = ({
         }
       });
     } else {
-      // Normal distribution where no color exceeds 4
+      // Cap every colour at four on screen. Uniform random picks used to let a fifth
+      // light of one colour appear at random, so a candidate who pressed L — correctly,
+      // by the rules on screen — was charged a false alarm.
+      const used: Partial<Record<LightColor, number>> = { [nextBlinkerColor]: 1 };
       newLights.forEach((light, i) => {
-        if (i !== blinkerIndex) {
-          light.color = colors[Math.floor(Math.random() * colors.length)];
-        }
+        if (i === blinkerIndex) return;
+        const available = colors.filter((c) => (used[c] ?? 0) < 4);
+        const pick = available[Math.floor(Math.random() * available.length)];
+        used[pick] = (used[pick] ?? 0) + 1;
+        light.color = pick;
       });
     }
+
+    // Judge what is actually on the board, blinker included — that is what the candidate sees.
+    const tally = newLights.reduce<Partial<Record<LightColor, number>>>((acc, light) => {
+      acc[light.color] = (acc[light.color] ?? 0) + 1;
+      return acc;
+    }, {});
+    hasFiveSameRef.current = colors.some((c) => (tally[c] ?? 0) >= 5);
 
     setLights(newLights);
   }, []);
@@ -294,7 +302,7 @@ export const Test5SameColourSequence: React.FC<Test5Props> = ({
         totalTargetEvents,
         totalHits,
         totalFalseAlarms,
-        1400, // Avg scan period
+        null, // the 1.9s board cycle is a design parameter, not a measured reaction time
         accuracyPct, // Raw score metric is vigilance accuracy %
         {
           '5-Same Hits': fiveSameHits,

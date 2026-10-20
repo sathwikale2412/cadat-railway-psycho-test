@@ -1,6 +1,8 @@
 import { TestId, TestResult } from '../types/cadat';
 
-// RDSO Psycho Test Norms (Estimated means and SD based on Indian Railways CADAT benchmarks)
+// Norms for THIS instrument, not published RDSO cut-offs: each mean is the middle of
+// the range the on-screen test can actually produce, so a strong run scores above the
+// cutoff and a weak one below it.
 interface TestNorm {
   mean: number;
   sd: number;
@@ -8,10 +10,10 @@ interface TestNorm {
 }
 
 const RDSO_NORMS: Record<TestId, TestNorm> = {
-  // Test 1: Complex Reaction Time (Target ~ 380ms)
+  // Test 1: Complex Reaction Time, measured to the final L press (~ 480ms typical)
   test1: {
-    mean: 380,
-    sd: 60,
+    mean: 480,
+    sd: 90,
     lowerIsBetter: true,
   },
   // Test 2: Form Perception (Accuracy % / Speed score)
@@ -20,10 +22,12 @@ const RDSO_NORMS: Record<TestId, TestNorm> = {
     sd: 12,
     lowerIsBetter: false,
   },
-  // Test 3: Concentration 4-Dots (Net correct items scanned)
+  // Test 3: Concentration 4-Dots. One 80-cell page holds ~30 four-dot groups, so the
+  // net score (correct - wrong/2) cannot exceed ~30; a mean of 65 made the cutoff
+  // mathematically unreachable no matter how well the candidate scanned.
   test3: {
-    mean: 65,
-    sd: 15,
+    mean: 18,
+    sd: 6,
     lowerIsBetter: false,
   },
   // Test 4: Speed Perception (Absolute deviation in milliseconds, target < 120ms)
@@ -71,7 +75,7 @@ export function generateTestResult(
   totalTrials: number,
   correctTrials: number,
   errorTrials: number,
-  averageReactionTimeMs: number,
+  averageReactionTimeMs: number | null,
   rawScoreMetric: number,
   additionalMetrics: Record<string, string | number> = {},
   omissionTrials?: number
@@ -88,7 +92,7 @@ export function generateTestResult(
     correctTrials,
     errorTrials,
     omissionTrials,
-    averageReactionTimeMs: Math.round(averageReactionTimeMs),
+    averageReactionTimeMs: averageReactionTimeMs === null ? undefined : Math.round(averageReactionTimeMs),
     accuracyPercentage,
     rawScore: Math.round(rawScoreMetric * 10) / 10,
     tScore,
