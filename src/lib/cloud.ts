@@ -42,6 +42,7 @@ export async function fetchHistory(userId: string): Promise<{ tests: TestResult[
   ]);
 
   if (testsRes.error) console.error('Failed to load cloud history', testsRes.error.message);
+  if (batteriesRes.error) console.error('Failed to load battery history', batteriesRes.error.message);
 
   return {
     tests: (testsRes.data ?? []).map((row) => row.payload as TestResult),
