@@ -52,6 +52,9 @@ import {
   Keyboard,
 } from 'lucide-react';
 
+// Deliberately vague: raw Postgres detail belongs in the console, not in front of a candidate.
+const CLOUD_SYNC_NOTICE = 'This attempt is saved on this device, but it did not reach your cloud history.';
+
 export const App: React.FC = () => {
   const { ready, cloudEnabled, userId, isGuest } = useAuth();
 
@@ -78,10 +81,22 @@ export const App: React.FC = () => {
   const [recentTests, setRecentTests] = useState<TestResult[]>([]);
   const [recentBatteries, setRecentBatteries] = useState<BatteryResult[]>([]);
 
+  // Shown when an attempt reaches this device but not the cloud history.
+  const [syncNotice, setSyncNotice] = useState<string>('');
+
   // Refresh history
   const reloadHistory = () => {
     setRecentTests(getStoredTestResults());
     setRecentBatteries(getStoredBatteries());
+  };
+
+  // A later successful write must not erase an earlier failure from this battery.
+  const trackSync = (saved: Promise<boolean>) => {
+    saved
+      .then((ok) => {
+        if (!ok) setSyncNotice(CLOUD_SYNC_NOTICE);
+      })
+      .catch(() => setSyncNotice(CLOUD_SYNC_NOTICE));
   };
 
   useEffect(() => {
@@ -137,7 +152,7 @@ export const App: React.FC = () => {
   };
 
   const handleTestComplete = (result: TestResult) => {
-    saveTestResult(result, userId);
+    trackSync(saveTestResult(result, userId));
     reloadHistory();
 
     if (isBatteryMode) {
@@ -167,7 +182,7 @@ export const App: React.FC = () => {
           averageTScore: avgTScore,
         };
 
-        saveBatteryResult(batteryRecord, userId);
+        trackSync(saveBatteryResult(batteryRecord, userId));
         reloadHistory();
         setActiveTest(null);
         setCurrentResultModal(null);
@@ -342,6 +357,18 @@ export const App: React.FC = () => {
 
       {/* Main Content Dashboard */}
       <main className="flex-1 max-w-5xl mx-auto w-full p-3 sm:p-6 space-y-6">
+        {syncNotice && (
+          <div className="flex items-start justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3">
+            <p className="text-xs sm:text-sm text-amber-200 leading-relaxed">{syncNotice}</p>
+            <button
+              onClick={() => setSyncNotice('')}
+              className="text-[10px] uppercase font-bold tracking-wider text-amber-300 hover:text-amber-100 shrink-0"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {/* Hero Section: Full Battery Mock Test */}
         <section className="bg-gradient-to-r from-blue-950/60 via-slate-900 to-slate-900 border-2 border-cyan-500/40 rounded-3xl p-4 sm:p-6 shadow-2xl relative overflow-hidden">
           <div className="absolute right-0 top-0 w-80 h-full opacity-10 pointer-events-none bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]" />

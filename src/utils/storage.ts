@@ -41,10 +41,10 @@ function mergeBy<T>(primary: T[], secondary: T[], keyOf: (item: T) => string, li
   return out;
 }
 
-export function saveTestResult(result: TestResult, userId?: string | null): void {
+export function saveTestResult(result: TestResult, userId?: string | null): Promise<boolean> {
   const merged = mergeBy([result], getStoredTestResults(), testKey, MAX_TESTS);
   writeJson(STORAGE_KEY_TESTS, merged);
-  if (userId) void pushTestResult(userId, result);
+  return userId ? pushTestResult(userId, result) : Promise.resolve(true);
 }
 
 export function getStoredTestResults(): TestResult[] {
@@ -58,10 +58,10 @@ export function getBestResultForTest(testId: TestId): TestResult | null {
   return results.reduce((best, curr) => (curr.tScore > best.tScore ? curr : best), results[0]);
 }
 
-export function saveBatteryResult(battery: BatteryResult, userId?: string | null): void {
+export function saveBatteryResult(battery: BatteryResult, userId?: string | null): Promise<boolean> {
   const merged = mergeBy([battery], getStoredBatteries(), (b) => b.id, MAX_BATTERIES);
   writeJson(STORAGE_KEY_BATTERIES, merged);
-  if (userId) void pushBatteryResult(userId, battery);
+  return userId ? pushBatteryResult(userId, battery) : Promise.resolve(true);
 }
 
 export function getStoredBatteries(): BatteryResult[] {

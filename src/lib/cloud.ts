@@ -6,8 +6,8 @@ export interface LoginRecord {
   logged_at: string;
 }
 
-export async function pushTestResult(userId: string, result: TestResult): Promise<void> {
-  if (!supabase) return;
+export async function pushTestResult(userId: string, result: TestResult): Promise<boolean> {
+  if (!supabase) return true;
   const { error } = await supabase.from('cadat_results').insert({
     user_id: userId,
     test_id: result.testId,
@@ -18,10 +18,11 @@ export async function pushTestResult(userId: string, result: TestResult): Promis
     payload: result,
   });
   if (error) console.error('Failed to sync test result', error.message);
+  return !error;
 }
 
-export async function pushBatteryResult(userId: string, battery: BatteryResult): Promise<void> {
-  if (!supabase) return;
+export async function pushBatteryResult(userId: string, battery: BatteryResult): Promise<boolean> {
+  if (!supabase) return true;
   const { error } = await supabase.from('cadat_batteries').insert({
     user_id: userId,
     battery_id: battery.id,
@@ -31,6 +32,7 @@ export async function pushBatteryResult(userId: string, battery: BatteryResult):
     payload: battery,
   });
   if (error) console.error('Failed to sync battery result', error.message);
+  return !error;
 }
 
 export async function fetchHistory(userId: string): Promise<{ tests: TestResult[]; batteries: BatteryResult[] }> {
