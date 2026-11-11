@@ -17,5 +17,11 @@
         { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
